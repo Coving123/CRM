@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop.xsd
+	http://www.springframework.org/schema/tx 
+	http://www.springframework.org/schema/tx/spring-tx.xsd">
+	
+	<!-- 先配置 C3P0 的连接池 -->
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="driverClass" value="com.mysql.cj.jdbc.Driver"/>
+		<property name="jdbcUrl" value="jdbc:mysql://localhost:3306/hello?useSSL=false&amp;serverTimezone=GMT&amp;characterEncoding=utf-8&amp;autoReconnect=true"/>
+		<property name="user" value="root"/>
+		<property name="password" value="123456"/>
+	</bean>
+	
+	<!-- 把 Hibernate 交给 Spring 管理
+		LocalSessionFactoryBean 加载配置文件 
+	-->
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
+		<!-- 先加载连接池 -->
+		<property name="dataSource" ref="dataSource"/>
+		<!-- 加载方言，加载可选 -->
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hibernate.format_sql">true</prop>
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
+			</props>
+		</property>
+		
+		<!-- 引入映射的配置文件 -->
+		<property name="mappingResources">
+			<list>
+				<value>com/hello/pojo/User.hbm.xml</value>
+				<value>com/hello/pojo/Customer.hbm.xml</value>
+				<value>com/hello/pojo/Dict.hbm.xml</value>
+			</list>
+		</property>
+		
+	</bean>
+	
+	<!-- 先配置平台事务管理器 -->
+	<bean id="transactionManager" class="org.springframework.orm.hibernate5.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory"/>
+	</bean>
+	
+	<!-- 开启事务的注解：只要你写了 XxxServiceImpl 实现类，一定要记得加事务注解 -->
+	<tx:annotation-driven transaction-manager="transactionManager"/>
+	
+	<!-- 配置客户模块 -->
+	<bean id="customerAction" class="com.hello.action.CustomerAction" scope="prototype">
+		<property name="customerService" ref="customerService"/>
+	</bean>
+	
+	<bean id="customerService" class="com.hello.service.impl.CustomerServiceImpl">
+		<property name="customerDao" ref="customerDao"/>
+	</bean>
+	
+	<bean id="customerDao" class="com.hello.dao.impl.CustomerDaoImpl">
+		<property name="sessionFactory" ref="sessionFactory"/>
+	</bean>
+	
+	
+	<!-- 配置用户的模块：XxxAction 类一定要设置为多例 -->
+	<bean id="userAction" class="com.hello.action.UserAction" scope="prototype">
+		<property name="userService" ref="userService"/>
+	</bean>
+
+	<bean id="userService" class="com.hello.service.impl.UserServiceImpl">
+		<property name="userDao" ref="userDao"/>
+	</bean>
+	
+	<bean id="userDao" class="com.hello.dao.impl.UserDaoImpl">
+		<property name="sessionFactory" ref="sessionFactory"/>
+	</bean>
+	
+	<!-- 配置字典模块 -->
+	<bean id="dictAction" class="com.hello.action.DictAction" scope="prototype">
+		<property name="dictService" ref="dictService"/>
+	</bean>
+	
+	<bean id="dictService" class="com.hello.service.impl.DictServiceImpl">
+		<property name="dictDao" ref="dictDao"/>
+	</bean>
+	
+	<bean id="dictDao" class="com.hello.dao.impl.DictDaoImpl">
+		<property name="sessionFactory" ref="sessionFactory"/>
+	</bean>
+
+</beans>
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE struts PUBLIC
+	"-//Apache Software Foundation//DTD Struts Configuration 2.3//EN"
+	"http://struts.apache.org/dtds/struts-2.3.dtd">
+<struts>
+
+	<!-- 先配置包结构 -->
+	<package name="crm" extends="struts-default" namespace="/">
+		
+		<!-- 配置全局的结果页面 -->
+		<global-results>
+			<result name="login" type="redirect">/login.jsp</result>
+		</global-results>
+		
+		<!-- 配置客户的 Action，如果 Action由Spring框架来管理，class标签上只需要编写ID值就OK
+			name 属性主要是用来接收客户的请求路径 customer_方法名
+			class 如果 struts2 交给 spring 管理了之后，class 属性值就不再是类的权限名了，
+			而是 spring 中设置 bean 的 id 值 
+			method 中的 {1} 指的是请求路径中的占位符，然后去执行对应的方法 
+		-->
+		<action name="customer_*" class="customerAction" method="{1}">
+			<result name="page">/jsp/customer/list.jsp</result>
+			<result name="addUI">/jsp/customer/add.jsp</result>
+			<result name="save" type="redirectAction">customer_findByPage.action</result>
+			<result name="delete" type="redirectAction">customer_findByPage.action</result>
+		</action>
+		
+		<!-- 配置用户的模块 
+			redirect：设置跳转类型为重定向
+		-->
+		<action name="user_*" class="userAction" method="{1}">
+			<result name="loginSuccess">/index.jsp</result>
+		</action>
+		
+		<!-- 配置字典的模块 -->
+		<action name="dict_*" class="dictAction" method="{1}">
+		</action>
+		
+	</package>
+    
+</struts>
+
+
+
+
+
+
+
+
+
+
+
+
+
